@@ -61,7 +61,7 @@
             animation: pop 0.2s ease-out;
         }
 
-        [cite_start]/* Status colors based on rules [cite: 94] */
+        /* Status colors */
         .status-greedy { color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
         .status-victorious { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
         .status-humble { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
@@ -69,6 +69,23 @@
         
         .card-bg {
             background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23292524' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* Number Input styling */
+        .treasure-input {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+        .treasure-input::-webkit-outer-spin-button, 
+        .treasure-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Placeholder styling */
+        ::placeholder {
+            color: #a8a29e;
+            opacity: 0.6;
         }
     </style>
 </head>
@@ -94,11 +111,11 @@
                 <div class="space-y-4">
                     <div class="group">
                         <label class="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 group-focus-within:text-amber-600 transition-colors">First Traveler</label>
-                        <input type="text" id="p1NameInput" value="Woodcutter" class="w-full bg-stone-200 p-3 rounded font-serif text-lg text-stone-800 border-2 border-transparent focus:border-amber-600 focus:bg-white outline-none transition-all">
+                        <input type="text" id="p1NameInput" placeholder="Woodcutter" class="w-full bg-stone-200 p-3 rounded font-serif text-lg text-stone-800 border-2 border-transparent focus:border-amber-600 focus:bg-white outline-none transition-all placeholder-stone-400">
                     </div>
                     <div class="group">
                         <label class="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 group-focus-within:text-amber-600 transition-colors">Second Traveler</label>
-                        <input type="text" id="p2NameInput" value="The Fox" class="w-full bg-stone-200 p-3 rounded font-serif text-lg text-stone-800 border-2 border-transparent focus:border-amber-600 focus:bg-white outline-none transition-all">
+                        <input type="text" id="p2NameInput" placeholder="The Fox" class="w-full bg-stone-200 p-3 rounded font-serif text-lg text-stone-800 border-2 border-transparent focus:border-amber-600 focus:bg-white outline-none transition-all placeholder-stone-400">
                     </div>
                 </div>
 
@@ -150,25 +167,47 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <div id="p1Card" class="bg-white rounded-lg p-4 shadow-md border-2 border-stone-200 transition-all duration-300 transform">
-                            <div class="text-xs text-stone-400 font-bold uppercase mb-1" id="p1NameCard">Player 1</div>
-                            <div class="flex items-end justify-between">
-                                <div class="flex flex-col">
-                                    <span id="p1StatusText" class="text-xs font-bold uppercase mb-1 status-normal">Normal</span>
-                                    <span class="text-3xl font-bold fantasy-font" id="p1PointsResult">3</span>
+                        <div id="p1Card" class="bg-white rounded-lg p-4 shadow-md border-2 border-stone-200 transition-all duration-300 transform flex flex-col justify-between">
+                            <div>
+                                <div class="text-xs text-stone-400 font-bold uppercase mb-1" id="p1NameCard">Player 1</div>
+                                <div class="flex items-end justify-between mb-4">
+                                    <div class="flex flex-col">
+                                        <span id="p1StatusText" class="text-xs font-bold uppercase mb-1 status-normal">Normal</span>
+                                        <span class="text-3xl font-bold fantasy-font" id="p1PointsResult">3</span>
+                                    </div>
+                                    <span class="text-xs text-stone-400 mb-1">Points</span>
                                 </div>
-                                <span class="text-xs text-stone-400 mb-1">Points</span>
+                            </div>
+                            
+                            <div class="border-t border-stone-100 pt-2">
+                                <label class="text-[10px] font-bold text-amber-600 uppercase tracking-wider block mb-1">Treasure (7s)</label>
+                                <div class="flex items-center justify-between bg-stone-50 rounded px-2 py-1 border border-stone-200">
+                                    <button onclick="adjustBonus('p1', -1)" class="text-stone-400 hover:text-stone-800 font-bold">-</button>
+                                    <input type="number" id="p1Bonus" value="0" readonly class="treasure-input w-8 text-center bg-transparent font-bold text-stone-700 text-sm">
+                                    <button onclick="adjustBonus('p1', 1)" class="text-stone-400 hover:text-stone-800 font-bold">+</button>
+                                </div>
                             </div>
                         </div>
 
-                        <div id="p2Card" class="bg-white rounded-lg p-4 shadow-md border-2 border-stone-200 transition-all duration-300 transform">
-                            <div class="text-xs text-stone-400 font-bold uppercase mb-1" id="p2NameCard">Player 2</div>
-                            <div class="flex items-end justify-between">
-                                <div class="flex flex-col">
-                                    <span id="p2StatusText" class="text-xs font-bold uppercase mb-1 status-victorious">Victorious</span>
-                                    <span class="text-3xl font-bold fantasy-font" id="p2PointsResult">6</span>
+                        <div id="p2Card" class="bg-white rounded-lg p-4 shadow-md border-2 border-stone-200 transition-all duration-300 transform flex flex-col justify-between">
+                            <div>
+                                <div class="text-xs text-stone-400 font-bold uppercase mb-1" id="p2NameCard">Player 2</div>
+                                <div class="flex items-end justify-between mb-4">
+                                    <div class="flex flex-col">
+                                        <span id="p2StatusText" class="text-xs font-bold uppercase mb-1 status-victorious">Victorious</span>
+                                        <span class="text-3xl font-bold fantasy-font" id="p2PointsResult">6</span>
+                                    </div>
+                                    <span class="text-xs text-stone-400 mb-1">Points</span>
                                 </div>
-                                <span class="text-xs text-stone-400 mb-1">Points</span>
+                            </div>
+                            
+                            <div class="border-t border-stone-100 pt-2">
+                                <label class="text-[10px] font-bold text-amber-600 uppercase tracking-wider block mb-1">Treasure (7s)</label>
+                                <div class="flex items-center justify-between bg-stone-50 rounded px-2 py-1 border border-stone-200">
+                                    <button onclick="adjustBonus('p2', -1)" class="text-stone-400 hover:text-stone-800 font-bold">-</button>
+                                    <input type="number" id="p2Bonus" value="0" readonly class="treasure-input w-8 text-center bg-transparent font-bold text-stone-700 text-sm">
+                                    <button onclick="adjustBonus('p2', 1)" class="text-stone-400 hover:text-stone-800 font-bold">+</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -224,7 +263,7 @@
             round: 1,
             scores: { p1: 0, p2: 0 },
             isGameOver: false,
-            activeGame: false // Tracks if we are past setup
+            activeGame: false
         };
 
         const els = {
@@ -257,7 +296,9 @@
             p1LeaderIndicator: document.getElementById('p1LeaderIndicator'),
             p2LeaderIndicator: document.getElementById('p2LeaderIndicator'),
             p1ScoreBg: document.getElementById('p1ScoreBg'),
-            p2ScoreBg: document.getElementById('p2ScoreBg')
+            p2ScoreBg: document.getElementById('p2ScoreBg'),
+            p1Bonus: document.getElementById('p1Bonus'),
+            p2Bonus: document.getElementById('p2Bonus')
         };
 
         // --- LOAD ON STARTUP ---
@@ -266,30 +307,23 @@
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
-                    // Only restore if a game was actually active
                     if (parsed.activeGame) {
                         gameState = parsed;
-                        // Restore UI from state
                         els.setupScreen.classList.add('hidden');
                         els.gameplayScreen.classList.remove('hidden');
-                        
-                        // Restore names in case we are in the middle of a game
                         els.p1Display.innerText = gameState.p1Name.substring(0, 8);
                         els.p2Display.innerText = gameState.p2Name.substring(0, 8);
                         els.p1NameCard.innerText = gameState.p1Name;
                         els.p2NameCard.innerText = gameState.p2Name;
-                        
                         updateUI();
                         updateTrickCalc();
                     }
                 } catch (e) {
-                    console.error("Save file corrupted, starting fresh.");
                     localStorage.removeItem('foxForestState');
                 }
             }
         };
 
-        // --- SAVE HELPER ---
         function saveGame() {
             localStorage.setItem('foxForestState', JSON.stringify(gameState));
         }
@@ -298,11 +332,11 @@
 
         function startGame(points) {
             gameState.winScore = points;
-            gameState.p1Name = els.p1NameInput.value || "Player 1";
-            gameState.p2Name = els.p2NameInput.value || "Player 2";
+            // Use input value OR fallback to placeholder text
+            gameState.p1Name = els.p1NameInput.value.trim() || "Woodcutter";
+            gameState.p2Name = els.p2NameInput.value.trim() || "The Fox";
             gameState.activeGame = true;
 
-            // Update Names in UI
             els.p1Display.innerText = gameState.p1Name.substring(0, 8);
             els.p2Display.innerText = gameState.p2Name.substring(0, 8);
             els.p1NameCard.innerText = gameState.p1Name;
@@ -311,7 +345,7 @@
             els.setupScreen.classList.add('hidden');
             els.gameplayScreen.classList.remove('hidden');
 
-            saveGame(); // Save initial state
+            saveGame();
             updateUI();
             updateTrickCalc();
         }
@@ -323,7 +357,6 @@
         }
 
         function fullReset() {
-            // Clear State
             gameState = {
                 winScore: 21,
                 p1Name: "Woodcutter",
@@ -334,17 +367,28 @@
                 activeGame: false
             };
             
-            // Clear Storage
             localStorage.removeItem('foxForestState');
 
-            // Reset UI
             els.tricksSlider.value = 6;
+            els.p1Bonus.value = 0;
+            els.p2Bonus.value = 0;
+            // Clear inputs so placeholders show again
+            els.p1NameInput.value = "";
+            els.p2NameInput.value = "";
+            
             els.victoryModal.classList.add('hidden');
             els.gameplayScreen.classList.add('hidden');
             els.setupScreen.classList.remove('hidden');
         }
 
-        [cite_start]// Logic based on provided Rulebook [cite: 94]
+        function adjustBonus(player, amount) {
+            const el = document.getElementById(player + 'Bonus');
+            let val = parseInt(el.value) + amount;
+            if (val < 0) val = 0;
+            if (val > 3) val = 3; // Max 3 sevens in the deck
+            el.value = val;
+        }
+
         function calculatePoints(tricks) {
             if (tricks <= 3) return { points: 6, status: "Humble", style: "status-humble", bg: "border-green-400" };
             if (tricks === 4) return { points: 1, status: "Normal", style: "status-normal", bg: "border-stone-200" };
@@ -365,22 +409,15 @@
             const r1 = calculatePoints(p1Tricks);
             const r2 = calculatePoints(p2Tricks);
 
-            // Update P1 Card
             updateCard(els.p1Card, els.p1PointsResult, els.p1StatusText, r1);
-            // Update P2 Card
             updateCard(els.p2Card, els.p2PointsResult, els.p2StatusText, r2);
         }
 
         function updateCard(cardEl, pointEl, statusEl, result) {
-            // Numbers
             pointEl.innerText = result.points > 0 ? "+" + result.points : result.points;
             statusEl.innerText = result.status;
-            
-            // Visual Styles
             statusEl.className = `text-xs font-bold uppercase mb-1 ${result.style}`;
-            
-            // Border Color Shift
-            cardEl.className = `bg-white rounded-lg p-4 shadow-md border-2 transition-all duration-300 transform ${result.bg}`;
+            cardEl.className = `bg-white rounded-lg p-4 shadow-md border-2 transition-all duration-300 transform flex flex-col justify-between ${result.bg}`;
             
             if(result.status === "Greedy") {
                 cardEl.classList.add("bg-red-50");
@@ -394,27 +431,34 @@
         function submitRound() {
             const p1Tricks = parseInt(els.tricksSlider.value);
             const p2Tricks = 13 - p1Tricks;
+            
+            // Calc Base Points
             const r1 = calculatePoints(p1Tricks);
             const r2 = calculatePoints(p2Tricks);
+            
+            // Get Bonus Points
+            const p1BonusVal = parseInt(els.p1Bonus.value) || 0;
+            const p2BonusVal = parseInt(els.p2Bonus.value) || 0;
 
-            gameState.scores.p1 += r1.points;
-            gameState.scores.p2 += r2.points;
+            gameState.scores.p1 += (r1.points + p1BonusVal);
+            gameState.scores.p2 += (r2.points + p2BonusVal);
 
             checkWin();
 
             if (!gameState.isGameOver) {
                 gameState.round++;
-                // Animation for round change
                 els.roundNumber.classList.add('pop-anim');
                 setTimeout(() => els.roundNumber.classList.remove('pop-anim'), 200);
                 
-                // Reset slider
+                // Reset inputs
                 els.tricksSlider.value = 6;
+                els.p1Bonus.value = 0;
+                els.p2Bonus.value = 0;
+                
                 updateTrickCalc();
                 updateUI();
-                saveGame(); // Save after updates
+                saveGame();
             } else {
-                // If game over, we still save so they don't lose the win screen on refresh
                 saveGame();
             }
         }
@@ -442,12 +486,10 @@
             els.p1CurrentScore.innerText = gameState.scores.p1;
             els.p2CurrentScore.innerText = gameState.scores.p2;
 
-            // Update Leader visuals
             els.p1LeaderIndicator.style.opacity = gameState.scores.p1 > gameState.scores.p2 ? "1" : "0";
             els.p2LeaderIndicator.style.opacity = gameState.scores.p2 > gameState.scores.p1 ? "1" : "0";
         }
 
-        // Init visuals
         updateTrickCalc();
     </script>
 </body>

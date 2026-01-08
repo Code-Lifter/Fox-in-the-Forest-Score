@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fox in the Forest Scorekeeper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Lato:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #1c1917; /* Stone 900 */
+            background-image: radial-gradient(circle at center, #292524 0%, #1c1917 100%);
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3, .fantasy-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background: #f59e0b; /* Amber 500 */
+            border: 4px solid #fff;
+            cursor: pointer;
+            margin-top: -12px; 
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #44403c; /* Stone 700 */
+            border-radius: 4px;
+        }
+
+        /* Animations */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pop-anim {
+            animation: pop 0.2s ease-out;
+        }
+
+        /* Status colors */
+        .status-greedy { color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+        .status-victorious { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+        .status-humble { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .status-normal { color: #a8a29e; }
+        
+        .card-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23292524' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center py-10 px-4">
+
+    <div class="w-full max-w-xl relative">
+        
+        <div class="absolute -top-4 -left-4 w-16 h-16 border-t-4 border-l-4 border-amber-600 rounded-tl-3xl opacity-50"></div>
+        <div class="absolute -bottom-4 -right-4 w-16 h-16 border-b-4 border-r-4 border-amber-600 rounded-br-3xl opacity-50"></div>
+
+        <div class="bg-stone-100 shadow-2xl rounded-xl overflow-hidden border border-stone-800 relative z-10 card-bg">
+            
+            <header class="bg-stone-900 text-amber-500 p-6 text-center border-b-4 border-amber-700">
+                <h1 class="text-3xl font-bold tracking-widest uppercase">The Fox in the Forest</h1>
+            </header>
+
+            <div id="setupScreen" class="p-8 space-y-8">
+                <div class="text-center space-y-2">
+                    <h2 class="text-2xl font-bold text-stone-800 fantasy-font">Prepare for the Journey</h2>
+                    <p class="text-stone-500 text-sm">Who dares enter the woods?</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="group">
+                        <label class="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 group-focus-within:text-amber-600 transition-colors">First Traveler</label>
+                        <input type="text" id="p1NameInput" value="Woodcutter" class="w-full bg-stone-200 p-3 rounded font-serif text-lg text-stone-800 border-2 border-transparent focus:border-amber-600 focus:bg-white outline-none transition-all">
+                    </div>
+                    <div class="group">
+                        <label class="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 group-focus-within:text-amber-600 transition-colors">Second Traveler</label>
+                        <input type="text" id="p2NameInput" value="The Fox" class="w-full bg-stone-200 p-3 rounded font-serif text-lg text-stone-800 border-2 border-transparent focus:border-amber-600 focus:bg-white outline-none transition-all">
+                    </div>
+                </div>
+
+                <div class="flex justify-center space-x-4 pt-4">
+                    <button onclick="startGame(16)" class="flex-1 py-3 border-2 border-stone-300 rounded text-stone-500 hover:border-amber-600 hover:text-amber-600 transition-all font-bold text-sm">SHORT (16)</button>
+                    <button onclick="startGame(21)" class="flex-1 py-3 bg-stone-800 text-amber-500 rounded border-2 border-stone-800 hover:bg-stone-900 transition-all font-bold shadow-lg">STANDARD (21)</button>
+                    <button onclick="startGame(35)" class="flex-1 py-3 border-2 border-stone-300 rounded text-stone-500 hover:border-amber-600 hover:text-amber-600 transition-all font-bold text-sm">LONG (35)</button>
+                </div>
+            </div>
+
+            <div id="gameplayScreen" class="hidden flex flex-col min-h-[500px]">
+                
+                <div class="flex bg-stone-800 text-stone-100 relative shadow-inner">
+                    <div class="w-1/2 p-6 text-center border-r border-stone-700 transition-colors duration-500" id="p1ScoreBg">
+                        <div id="p1Display" class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">P1</div>
+                        <div id="p1CurrentScore" class="text-6xl fantasy-font font-bold text-white">0</div>
+                        <div id="p1LeaderIndicator" class="h-1 w-8 bg-amber-500 mx-auto mt-2 opacity-0 transition-opacity"></div>
+                    </div>
+                    <div class="w-1/2 p-6 text-center transition-colors duration-500" id="p2ScoreBg">
+                        <div id="p2Display" class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">P2</div>
+                        <div id="p2CurrentScore" class="text-6xl fantasy-font font-bold text-white">0</div>
+                        <div id="p2LeaderIndicator" class="h-1 w-8 bg-amber-500 mx-auto mt-2 opacity-0 transition-opacity"></div>
+                    </div>
+                    
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 border-2 border-amber-600 rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-10">
+                        <span id="roundNumber" class="text-amber-500 font-bold font-serif text-lg">1</span>
+                    </div>
+                </div>
+
+                <div class="flex-grow p-6 flex flex-col justify-center bg-stone-100">
+                    
+                    <div class="text-center mb-8">
+                        <h3 class="text-stone-400 text-xs font-bold uppercase tracking-[0.2em] mb-1">Current Round Resolution</h3>
+                        <p class="text-stone-500 italic text-sm">Slide to record tricks won</p>
+                    </div>
+
+                    <div class="mb-10 relative px-4">
+                        <div class="flex justify-between text-4xl font-bold mb-4 fantasy-font">
+                            <span id="p1TricksDisplay" class="text-stone-800 transition-colors">6</span>
+                            <span class="text-stone-300 text-2xl self-center font-sans font-light">TRICKS</span>
+                            <span id="p2TricksDisplay" class="text-stone-800 transition-colors">7</span>
+                        </div>
+
+                        <input type="range" id="tricksSlider" min="0" max="13" value="6" class="w-full relative z-20" oninput="updateTrickCalc()">
+                        
+                        <div class="flex justify-between px-1 mt-2 text-[10px] text-stone-300 font-mono">
+                            <span>0</span><span>13</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div id="p1Card" class="bg-white rounded-lg p-4 shadow-md border-2 border-stone-200 transition-all duration-300 transform">
+                            <div class="text-xs text-stone-400 font-bold uppercase mb-1" id="p1NameCard">Player 1</div>
+                            <div class="flex items-end justify-between">
+                                <div class="flex flex-col">
+                                    <span id="p1StatusText" class="text-xs font-bold uppercase mb-1 status-normal">Normal</span>
+                                    <span class="text-3xl font-bold fantasy-font" id="p1PointsResult">3</span>
+                                </div>
+                                <span class="text-xs text-stone-400 mb-1">Points</span>
+                            </div>
+                        </div>
+
+                        <div id="p2Card" class="bg-white rounded-lg p-4 shadow-md border-2 border-stone-200 transition-all duration-300 transform">
+                            <div class="text-xs text-stone-400 font-bold uppercase mb-1" id="p2NameCard">Player 2</div>
+                            <div class="flex items-end justify-between">
+                                <div class="flex flex-col">
+                                    <span id="p2StatusText" class="text-xs font-bold uppercase mb-1 status-victorious">Victorious</span>
+                                    <span class="text-3xl font-bold fantasy-font" id="p2PointsResult">6</span>
+                                </div>
+                                <span class="text-xs text-stone-400 mb-1">Points</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="submitRound()" class="mt-8 w-full bg-stone-800 hover:bg-stone-900 text-amber-500 font-bold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border border-stone-700 uppercase tracking-widest">
+                        Commit Round
+                    </button>
+                    
+                    <button onclick="resetGame()" class="mt-4 text-xs text-stone-400 hover:text-red-500 transition-colors underline decoration-stone-300">Reset Entire Game</button>
+                </div>
+
+                <div class="bg-stone-200 p-4 border-t border-stone-300 max-h-40 overflow-y-auto" id="historyContainer">
+                    <h4 class="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">Journey Log</h4>
+                    <div id="historyList" class="space-y-2">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="victoryModal" class="fixed inset-0 bg-black bg-opacity-90 hidden flex items-center justify-center z-50 px-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl p-10 max-w-md w-full text-center border-4 border-amber-500 shadow-2xl relative overflow-hidden">
+            <div class="absolute inset-0 bg-amber-50 opacity-50"></div>
+            
+            <div class="relative z-10">
+                <h2 class="text-5xl fantasy-font font-bold text-amber-600 mb-2 drop-shadow-sm">Victory!</h2>
+                <div class="h-1 w-24 bg-stone-800 mx-auto mb-6"></div>
+                
+                <p class="text-stone-500 text-sm uppercase tracking-widest mb-2">The winner is</p>
+                <p id="winnerText" class="text-3xl font-bold text-stone-800 mb-8 fantasy-font">Player Name</p>
+                
+                <div class="flex justify-center space-x-8 mb-8 text-stone-600">
+                    <div class="text-center">
+                        <div id="finalP1Name" class="text-[10px] font-bold uppercase tracking-widest">P1</div>
+                        <div id="finalP1Score" class="text-2xl font-bold">0</div>
+                    </div>
+                    <div class="text-2xl text-stone-300 font-light">/</div>
+                    <div class="text-center">
+                        <div id="finalP2Name" class="text-[10px] font-bold uppercase tracking-widest">P2</div>
+                        <div id="finalP2Score" class="text-2xl font-bold">0</div>
+                    </div>
+                </div>
+
+                <button onclick="resetGame()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-8 rounded shadow-lg w-full transition-colors uppercase tracking-widest">Start New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG & STATE ---
+        let gameState = {
+            winScore: 21,
+            p1Name: "Woodcutter",
+            p2Name: "The Fox",
+            round: 1,
+            scores: { p1: 0, p2: 0 },
+            history: []
+        };
+
+        const els = {
+            setupScreen: document.getElementById('setupScreen'),
+            gameplayScreen: document.getElementById('gameplayScreen'),
+            p1NameInput: document.getElementById('p1NameInput'),
+            p2NameInput: document.getElementById('p2NameInput'),
+            p1Display: document.getElementById('p1Display'),
+            p2Display: document.getElementById('p2Display'),
+            p1NameCard: document.getElementById('p1NameCard'),
+            p2NameCard: document.getElementById('p2NameCard'),
+            p1CurrentScore: document.getElementById('p1CurrentScore'),
+            p2CurrentScore: document.getElementById('p2CurrentScore'),
+            roundNumber: document.getElementById('roundNumber'),
+            tricksSlider: document.getElementById('tricksSlider'),
+            p1TricksDisplay: document.getElementById('p1TricksDisplay'),
+            p2TricksDisplay: document.getElementById('p2TricksDisplay'),
+            p1PointsResult: document.getElementById('p1PointsResult'),
+            p2PointsResult: document.getElementById('p2PointsResult'),
+            p1StatusText: document.getElementById('p1StatusText'),
+            p2StatusText: document.getElementById('p2StatusText'),
+            p1Card: document.getElementById('p1Card'),
+            p2Card: document.getElementById('p2Card'),
+            historyList: document.getElementById('historyList'),
+            victoryModal: document.getElementById('victoryModal'),
+            winnerText: document.getElementById('winnerText'),
+            finalP1Name: document.getElementById('finalP1Name'),
+            finalP1Score: document.getElementById('finalP1Score'),
+            finalP2Name: document.getElementById('finalP2Name'),
+            finalP2Score: document.getElementById('finalP2Score'),
+            p1LeaderIndicator: document.getElementById('p1LeaderIndicator'),
+            p2LeaderIndicator: document.getElementById('p2LeaderIndicator'),
+            p1ScoreBg: document.getElementById('p1ScoreBg'),
+            p2ScoreBg: document.getElementById('p2ScoreBg')
+        };
+
+        // --- CORE FUNCTIONS ---
+
+        function startGame(points) {
+            gameState.winScore = points;
+            gameState.p1Name = els.p1NameInput.value || "Player 1";
+            gameState.p2Name = els.p2NameInput.value || "Player 2";
+
+            // Update Names in UI
+            els.p1Display.innerText = gameState.p1Name.substring(0, 8);
+            els.p2Display.innerText = gameState.p2Name.substring(0, 8);
+            els.p1NameCard.innerText = gameState.p1Name;
+            els.p2NameCard.innerText = gameState.p2Name;
+
+            els.setupScreen.classList.add('hidden');
+            els.gameplayScreen.classList.remove('hidden');
+
+            updateUI();
+            updateTrickCalc();
+        }
+
+        function resetGame() {
+            gameState.round = 1;
+            gameState.scores.p1 = 0;
+            gameState.scores.p2 = 0;
+            gameState.history = [];
+            
+            els.tricksSlider.value = 6;
+            els.victoryModal.classList.add('hidden');
+            els.gameplayScreen.classList.add('hidden');
+            els.setupScreen.classList.remove('hidden');
+            els.historyList.innerHTML = '';
+        }
+
+        [cite_start]// Logic based on provided Rulebook [cite: 94]
+        function calculatePoints(tricks) {
+            if (tricks <= 3) return { points: 6, status: "Humble", style: "status-humble", bg: "border-green-400" };
+            if (tricks === 4) return { points: 1, status: "Normal", style: "status-normal", bg: "border-stone-200" };
+            if (tricks === 5) return { points: 2, status: "Defeated", style: "status-normal", bg: "border-stone-200" };
+            if (tricks === 6) return { points: 3, status: "Normal", style: "status-normal", bg: "border-stone-200" };
+            if (tricks >= 7 && tricks <= 9) return { points: 6, status: "Victorious", style: "status-victorious", bg: "border-amber-400" };
+            if (tricks >= 10) return { points: 0, status: "Greedy", style: "status-greedy", bg: "border-red-400" };
+            return { points: 0, status: "-", style: "", bg: "" };
+        }
+
+        function updateTrickCalc() {
+            const p1Tricks = parseInt(els.tricksSlider.value);
+            const p2Tricks = 13 - p1Tricks;
+
+            els.p1TricksDisplay.innerText = p1Tricks;
+            els.p2TricksDisplay.innerText = p2Tricks;
+
+            const r1 = calculatePoints(p1Tricks);
+            const r2 = calculatePoints(p2Tricks);
+
+            // Update P1 Card
+            updateCard(els.p1Card, els.p1PointsResult, els.p1StatusText, r1);
+            // Update P2 Card
+            updateCard(els.p2Card, els.p2PointsResult, els.p2StatusText, r2);
+        }
+
+        function updateCard(cardEl, pointEl, statusEl, result) {
+            // Numbers
+            pointEl.innerText = result.points > 0 ? "+" + result.points : result.points;
+            statusEl.innerText = result.status;
+            
+            // Visual Styles
+            statusEl.className = `text-xs font-bold uppercase mb-1 ${result.style}`;
+            
+            // Border Color Shift
+            cardEl.className = `bg-white rounded-lg p-4 shadow-md border-2 transition-all duration-300 transform ${result.bg}`;
+            
+            if(result.status === "Greedy") {
+                cardEl.classList.add("bg-red-50");
+            } else if (result.status === "Humble" || result.status === "Victorious") {
+                cardEl.classList.add("bg-amber-50");
+            } else {
+                cardEl.classList.remove("bg-red-50", "bg-amber-50");
+            }
+        }
+
+        function submitRound() {
+            const p1Tricks = parseInt(els.tricksSlider.value);
+            const p2Tricks = 13 - p1Tricks;
+            const r1 = calculatePoints(p1Tricks);
+            const r2 = calculatePoints(p2Tricks);
+
+            gameState.scores.p1 += r1.points;
+            gameState.scores.p2 += r2.points;
+
+            // Add History
+            const historyItem = document.createElement('div');
+            historyItem.className = "flex justify-between items-center text-sm p-2 bg-white rounded border border-stone-200 animate-fade-in-down";
+            historyItem.innerHTML = `
+                <span class="font-bold text-stone-300">R${gameState.round}</span>
+                <div class="flex space-x-4">
+                    <span class="${r1.points === 0 ? 'text-red-500' : 'text-stone-600'}">${gameState.p1Name}: +${r1.points}</span>
+                    <span class="${r2.points === 0 ? 'text-red-500' : 'text-stone-600'}">${gameState.p2Name}: +${r2.points}</span>
+                </div>
+            `;
+            els.historyList.prepend(historyItem);
+
+            checkWin();
+
+            if (!gameState.isGameOver) {
+                gameState.round++;
+                // Animation for round change
+                els.roundNumber.classList.add('pop-anim');
+                setTimeout(() => els.roundNumber.classList.remove('pop-anim'), 200);
+                
+                // Reset slider
+                els.tricksSlider.value = 6;
+                updateTrickCalc();
+                updateUI();
+            }
+        }
+
+        function checkWin() {
+            if (gameState.scores.p1 >= gameState.winScore || gameState.scores.p2 >= gameState.winScore) {
+                gameState.isGameOver = true;
+                let winner = "";
+                if (gameState.scores.p1 > gameState.scores.p2) winner = gameState.p1Name;
+                else if (gameState.scores.p2 > gameState.scores.p1) winner = gameState.p2Name;
+                else winner = "Tie!"; // Tie break rule logic requires tracking last round points, simplified here for visual demo.
+
+                els.winnerText.innerText = winner;
+                els.finalP1Name.innerText = gameState.p1Name;
+                els.finalP2Name.innerText = gameState.p2Name;
+                els.finalP1Score.innerText = gameState.scores.p1;
+                els.finalP2Score.innerText = gameState.scores.p2;
+                
+                els.victoryModal.classList.remove('hidden');
+            }
+        }
+
+        function updateUI() {
+            els.roundNumber.innerText = gameState.round;
+            els.p1CurrentScore.innerText = gameState.scores.p1;
+            els.p2CurrentScore.innerText = gameState.scores.p2;
+
+            // Update Leader visuals
+            els.p1LeaderIndicator.style.opacity = gameState.scores.p1 > gameState.scores.p2 ? "1" : "0";
+            els.p2LeaderIndicator.style.opacity = gameState.scores.p2 > gameState.scores.p1 ? "1" : "0";
+        }
+
+        // Init
+        updateTrickCalc();
+    </script>
+</body>
+</html>
